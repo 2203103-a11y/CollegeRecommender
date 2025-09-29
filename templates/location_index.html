@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Location-Based College Predictor</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    html, body {
+      height: 100%;
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .wrapper {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .content {
+      flex: 1;
+    }
+    .header-title {
+      font-size: 32px;
+      font-weight: bold;
+      color: #0d6efd;
+    }
+    .card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    .college-card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      transition: transform 0.2s ease;
+    }
+    .college-card:hover {
+      transform: scale(1.02);
+    }
+    .college-card h5 {
+      color: #0d6efd;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+    .college-card h5:hover{
+        color: darkblue;
+    }
+    .section-title {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    footer {
+      background-color: #0d6efd;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand me-auto" href="#"><h1><i>College Recommender</i></h1></a>
+      <ul class="navbar-nav">
+        <li>
+          {% if session.get('is_admin') %}
+            <a class="nav-link" href="/metrics">Metrics</a>
+          {% endif %}
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/predictor">Standard Recommender</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="/predictor_location">Location-Based</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/college_lookup">College Lookup</a>
+        </li>
+        <li>
+          {% if session.get('is_admin') %}
+            <a class="nav-link" href="/logout">Logout</a>
+          {% endif %}
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container content py-5">
+    <div class="text-center mb-4">
+      <h1 class="header-title text-primary"> Location-Based College Recommender</h1>
+      <p class="text-muted">Find colleges that match your percentile, category, branch, and a location you want.</p>
+    </div>
+
+    <!-- Input Form -->
+    <div class="card p-4 mb-5">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <input type="number" id="percentile" class="form-control" placeholder="Percentile (e.g. 95.5)" min="0" max="100" step="0.01" style="margin-top: 8px;">
+        </div>
+        <div class="col-md-4">
+          <select id="category" class="form-select my-2">
+            <option value="" disabled selected>Select your category</option>
+            <option value="OPEN">OPEN</option>
+            <option value="OBC">OBC</option>
+            <option value="SC/ST">SC/ST</option>
+            <option value="TFWS">TFWS</option>
+            <option value="EWS">EWS</option>
+            <option value="PWD">PWD</option>
+            <option value="MI">MI</option>
+            <option value="ORPHAN">ORPHAN</option>
+            <option value="GNT">GNT</option>
+            <option value="LNT">LNT</option>
+        </select>
+        </div>
+        <div class="col-md-4">
+          <select id="branch" class="form-select my-2">
+            <option value="" disabled selected>Select your branch</option>
+
+            <!-- Computer Science & AI/ML/DS -->
+            <option value="CSE (AI/ML)">CSE (AI/ML)</option>
+            <option value="CSE (Data Science)">CSE (Data Science)</option>
+            <option value="CSE (Cyber/IoT)">CSE (Cyber/IoT)</option>
+            <option value="CSE (General)">CSE (General)</option>
+
+            <!-- Electronics / Electrical -->
+            <option value="Electronics and Telecommunication Engineering">Electronics and Telecommunication Engineering</option>
+            <option value="Electrical Engineering">Electrical Engineering</option>
+
+            <!-- Mechanical / Mechatronics / Production -->
+            <option value="Mechanical Engineering">Mechanical Engineering</option>
+            <option value="Robotics / Automation">Robotics / Automation</option>
+
+            <!-- Civil / Infrastructure -->
+            <option value="Civil Engineering">Civil Engineering</option>
+
+            <!-- Chemical / Petro / Oils -->
+            <option value="Chemical Engineering">Chemical Engineering</option>
+            <option value="Petro / Oil / Surface Coating">Petro / Oil / Surface Coating</option>
+            <option value="Pharmaceutical / Fine Chemicals">Pharmaceutical / Fine Chemicals</option>
+
+            <!-- Textile / Polymer -->
+            <option value="Textile / Polymer">Textile / Polymer</option>
+
+            <!-- Food / Agriculture / Fashion -->
+            <option value="Food / Agriculture">Food / Agriculture</option>
+            <option value="Fashion Technology">Fashion Technology</option>
+
+            <!-- Instrumentation / Misc -->
+            <option value="Instrumentation / Controls">Instrumentation / Controls</option>
+            <option value="Mechatronics Engineering">Mechatronics Engineering</option>
+            <option value="Aeronautical Engineering">Aeronautical Engineering</option>
+            <option value="Automobile / Automotive">Automobile / Automotive</option>
+            <option value="Mining Engineering">Mining Engineering</option>
+            <option value="Safety / Fire Engineering">Safety / Fire Engineering</option>
+            <option value="Metallurgy / Material Technology">Metallurgy / Material Technology</option>
+        </select>
+
+        </select>
+        </div>
+        <div class="col-md-3">
+          <input type="text" id="location" class="form-control" placeholder="Location (e.g. Pune)">
+        </div>
+      </div>
+      <div class="text-center mt-4">
+        <button class="btn btn-primary px-4 py-2" onclick="getColleges()"> Find Colleges</button>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results-container">
+      <h3 class="section-title text-center text-primary"> Recommended Colleges:</h3>
+      <div id="results" class="row justify-content-center"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="text-center py-1 mt-auto bg-secondary text-white" style="font-size: 12px;">
+  <div class="container">
+    <small>&copy; Capstone Project @2025-26 | All Rights Reserved</small>
+  </div>
+</footer>
+
+</div>
+
+<!-- JS Script -->
+<script>
+  async function getColleges() {
+    const percentile = document.getElementById("percentile").value;
+    const category = document.getElementById("category").value;
+    const branch = document.getElementById("branch").value;
+    const location = document.getElementById("location").value;
+    const resultsDiv = document.getElementById("results");
+
+    if (!percentile || !category || !branch || !location) {
+      resultsDiv.innerHTML = "<p class='text-danger'>Please fill in all fields.</p>";
+      return;
+    }
+
+    try {
+      const response = await fetch('/predict_location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          percentile: parseFloat(percentile),
+          category: category,
+          branch: branch,
+          location: location
+        })
+      });
+
+      const data = await response.json();
+      displayResults(data);
+    } catch (error) {
+      resultsDiv.innerHTML = "<p class='text-danger'>Error connecting to the server.</p>";
+    }
+  }
+
+  function displayResults(data) {
+    const resultsDiv = document.getElementById("results");
+    resultsDiv.innerHTML = "";
+
+    if (data.error) {
+      resultsDiv.innerHTML = `<p class="text-danger">${data.error}</p>`;
+      return;
+    }
+
+    if (data.length === 0) {
+      resultsDiv.innerHTML = "<p class='text-warning'>No colleges found matching your criteria.</p>";
+      return;
+    }
+
+    let html = "";
+    data.forEach(college => {
+      html += `
+        <div class="col-md-5">
+          <div class="college-card">
+            <h5>
+              <a href="${college['Link']}" target="_blank" class="text-primary text-decoration-none">
+                ${college['College Name']}
+              </a>
+            </h5>
+            <p><strong>Branch:</strong> ${college['Branch']}</p>
+            <p><strong>Category:</strong> ${college['Category']}</p>
+            <p><strong>Cutoff Percentile:</strong> ${parseFloat(college['Percentile']).toFixed(2)}%</p>
+          </div>
+        </div>
+      `;
+    });
+
+    resultsDiv.innerHTML = html;
+  }
+</script>
+
+</body>
+</html>

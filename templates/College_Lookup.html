@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>College Lookup</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .autocomplete-list {
+      position: absolute;
+      z-index: 1000;
+      background-color: white;
+      width: 100%;
+      border: 1px solid #ced4da;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .autocomplete-item {
+      padding: 10px;
+      cursor: pointer;
+    }
+    .autocomplete-item:hover {
+      background-color: #f1f1f1;
+    }
+    #resultCard {
+      margin-bottom: 100px; /* Adjust as needed */
+    }
+    .header-title {
+      font-size: 32px;
+      font-weight: bold;
+      color: #0d6efd;
+    }
+    .card {
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+}
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container-fluid">
+    <a class="navbar-brand me-auto" href="/"><h1><i>College Recommender</i></h1></a>
+    <div class="navbar-nav">
+      {% if session.get('is_admin') %}
+        <a class="nav-link" href="/metrics">Metrics</a>
+      {% endif %}
+      <a class="nav-link" href="/predictor">Standard Recommender</a>
+      <a class="nav-link" href="/predictor_location">Location-Based</a>
+      <a class="nav-link active" href="/college_lookup">College Lookup</a>
+      {% if session.get('is_admin') %}
+        <a class="nav-link" href="/logout">Logout</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-5">
+  <div class="text-center mb-4">
+      <h1 class="header-title text-primary"> College lookup by Name</h1>
+      <p class="text-muted">Find cutoff Percentiles of all branches with your category in the college you want.</p>
+    </div>
+  <div class="mb-4 row">
+  <div class="col-md-6 position-relative">
+    <input type="text" id="collegeInput" class="form-control" placeholder="Start typing a college name...">
+    <div id="suggestions" class="autocomplete-list"></div>
+  </div>
+
+  <div class="col-md-4">
+    <select id="categoryInput" class="form-select">
+      <option value="" disabled selected>Select your category</option>
+            <option value="AI">AI</option>
+            <option value="DEFOBCS">DEFOBCS</option>
+            <option value="DEFOPENS">DEFOPENS</option>
+            <option value="DEFRNT1S">DEFRNT1S</option>
+            <option value="DEFRNT2S">DEFRNT2S</option>
+            <option value="DEFRNT3S">DEFRNT3S</option>
+            <option value="DEFROBCS">DEFROBCS</option>
+            <option value="DEFRSCS">DEFRSCS</option>
+            <option value="DEFSCS">DEFSCS</option>
+            <option value="EWS">EWS</option>
+            <option value="GNT1H">GNT1H</option>
+            <option value="GNT1O">GNT1O</option>
+            <option value="GNT1S">GNT1S</option>
+            <option value="GNT2H">GNT2H</option>
+            <option value="GNT2O">GNT2O</option>
+            <option value="GNT2S">GNT2S</option>
+            <option value="GNT3H">GNT3H</option>
+            <option value="GNT3O">GNT3O</option>
+            <option value="GNT3S">GNT3S</option>
+            <option value="GOBCH">GOBCH</option>
+            <option value="GOBCO">GOBCO</option>
+            <option value="GOBCS">GOBCS</option>
+            <option value="GOPENH">GOPENH</option>
+            <option value="GOPENO">GOPENO</option>
+            <option value="GOPENS">GOPENS</option>
+            <option value="GSCH">GSCH</option>
+            <option value="GSCO">GSCO</option>
+            <option value="GSCS">GSCS</option>
+            <option value="GSTH">GSTH</option>
+            <option value="GSTO">GSTO</option>
+            <option value="GSTS">GSTS</option>
+            <option value="GVJH">GVJH</option>
+            <option value="GVJO">GVJO</option>
+            <option value="GVJS">GVJS</option>
+            <option value="LNT1H">LNT1H</option>
+            <option value="LNT1O">LNT1O</option>
+            <option value="LNT1S">LNT1S</option>
+            <option value="LNT2H">LNT2H</option>
+            <option value="LNT2O">LNT2O</option>
+            <option value="LNT2S">LNT2S</option>
+            <option value="LNT3H">LNT3H</option>
+            <option value="LNT3O">LNT3O</option>
+            <option value="LNT3S">LNT3S</option>
+            <option value="LOBCH">LOBCH</option>
+            <option value="LOBCO">LOBCO</option>
+            <option value="LOBCS">LOBCS</option>
+            <option value="LOPENH">LOPENH</option>
+            <option value="LOPENO">LOPENO</option>
+            <option value="LOPENS">LOPENS</option>
+            <option value="LSCH">LSCH</option>
+            <option value="LSCO">LSCO</option>
+            <option value="LSCS">LSCS</option>
+            <option value="LSTH">LSTH</option>
+            <option value="LSTO">LSTO</option>
+            <option value="LSTS">LSTS</option>
+            <option value="LVJH">LVJH</option>
+            <option value="LVJO">LVJO</option>
+            <option value="LVJS">LVJS</option>
+            <option value="MI">MI</option>
+            <option value="MI-AI">MI-AI</option>
+            <option value="MI-MH">MI-MH</option>
+            <option value="ORPHAN">ORPHAN</option>
+            <option value="PWDOBCH">PWDOBCH</option>
+            <option value="PWDOBCS">PWDOBCS</option>
+            <option value="PWDOPENH">PWDOPENH</option>
+            <option value="PWDOPENS">PWDOPENS</option>
+            <option value="PWDRNT1S">PWDRNT1S</option>
+            <option value="PWDRNT2S">PWDRNT2S</option>
+            <option value="PWDRNT3S">PWDRNT3S</option>
+            <option value="PWDROBCH">PWDROBCH</option>
+            <option value="PWDROBCS">PWDROBCS</option>
+            <option value="PWDRSCH">PWDRSCH</option>
+            <option value="PWDRSCS">PWDRSCS</option>
+            <option value="PWDRVJS">PWDRVJS</option>
+            <option value="PWDSCH">PWDSCH</option>
+            <option value="PWDSCS">PWDSCS</option>
+            <option value="TFWS">TFWS</option>
+    </select>
+  </div>
+
+  <div class="col-md-2">
+    <button class="btn btn-primary w-100" onclick="searchCollege()">Search</button>
+  </div>
+</div>
+
+  <div id="resultCard" class="row justify-content-center"></div>
+</div>
+
+<!-- Footer -->
+<footer class="text-center py-1 mt-auto bg-secondary text-white" style="font-size: 12px;">
+  <div class="container">
+    <small>&copy; Capstone Project @2025-26 | All Rights Reserved</small>
+  </div>
+</footer>
+
+<script>
+  const collegeInput = document.getElementById('collegeInput');
+  const suggestionsDiv = document.getElementById('suggestions');
+  const resultCard = document.getElementById('resultCard');
+
+  let timeout = null;
+
+  collegeInput.addEventListener('input', function () {
+    const query = this.value;
+
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      if (query.length >= 2) {
+        fetch(`/lookup_college_data?query=${encodeURIComponent(query)}`)
+          .then(res => res.json())
+          .then(data => {
+            suggestionsDiv.innerHTML = '';
+            if (Array.isArray(data) && data.length > 0) {
+              data.forEach(item => {
+                const div = document.createElement('div');
+                div.classList.add('autocomplete-item');
+                div.textContent = item['College Name'];
+                div.addEventListener('click', () => {
+                  collegeInput.value = item['College Name'];
+                  suggestionsDiv.innerHTML = '';
+                });
+                suggestionsDiv.appendChild(div);
+              });
+            }
+          });
+      } else {
+        suggestionsDiv.innerHTML = '';
+      }
+    }, 300);
+  });
+  
+  function searchCollege() {
+  const college = collegeInput.value.trim();
+  const category = document.getElementById('categoryInput').value.trim();
+
+  if (!college || !category) {
+    resultCard.innerHTML = "<p class='text-danger'>Please enter both college name and category.</p>";
+    return;
+  }
+
+  fetch(`/lookup_college_data?query=${encodeURIComponent(college)}&category=${encodeURIComponent(category)}`)
+    .then(res => res.json())
+    .then(data => {
+      displayCard(data);
+    });
+}
+
+
+  function displayCard(colleges) {
+  if (!colleges.length) {
+    resultCard.innerHTML = "<p class='text-danger'>No data found.</p>";
+    return;
+  }
+
+  const collegeName = colleges[0]['College Name'];
+
+  let html = `
+    <div class="col-md-10">
+      <div class="card p-4 mb-4">
+        <h4 class="text-primary mb-3">${collegeName}</h4>
+        <table class="table table-bordered table-hover">
+          <thead class="table-light">
+            <tr>
+              <th>Branch</th>
+              <th>Category</th>
+              <th>Cutoff Percentile</th>
+            </tr>
+          </thead>
+          <tbody>
+  `;
+
+  colleges.forEach(entry => {
+    html += `
+      <tr>
+        <td>${entry['Branch']}</td>
+        <td>${entry['Category']}</td>
+        <td>${parseFloat(entry['Percentile']).toFixed(2)}%</td>
+      </tr>
+    `;
+  });
+
+  html += `
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  resultCard.innerHTML = html;
+}
+</script>
+
+</body>
+</html>
